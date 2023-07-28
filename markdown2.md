@@ -3,23 +3,24 @@ sequenceDiagram
 
 Actor U as User
 
-Participant Web as Página Web
-Participant S as Servidor
+Participant Web as Template(Publicaciones_buscar)
+Participant S as View(PublicacionCreate)
+Participant M as Model(Publicacion)
 Participant DB as Base de datos
-U ->> Web: Boton "Busca Publicaciones"
+U ->> Web: Envía los productos seleccionados
 Activate Web
-  Web -->> U: Formulario "publicacion_buscar.html" sin filtro de busqueda
-Deactivate Web
-U ->> Web: Envía los productos modificados
-Activate Web
-  Web ->> S: Envía la solicitud GET
+  Web ->> S: Envía la lista de productos
   Activate S
-    S ->> S: Coge la lista de productos
-    S ->> DB: Realiza la petición de todas las publicaciones
-    Activate DB
-      DB -->> S: Envía la informacion de las publicaciones
-    Deactivate DB
-    S ->> S: Filtra las publicaciones por los productos
+    S ->> S: selected_productos = self.request.GET.getlist('productos')
+    S ->> M: Realiza la petición de todas las publicaciones
+    Activate M
+      M ->> DB: pide la informacion de las publicaciones
+      Activate DB
+        DB -->> M: Le devuelve todas las publicaciones
+      Deactivate DB
+      M -->> S: Devuelve la informacion de las publicaciones
+    Deactivate M
+    S ->> S: queryset = queryset.filter(productos__in=productos)
     S ->> Web: Devuelve el resultado
   Deactivate S
   Web ->> U: Le muestra las publicaciones filtradas
