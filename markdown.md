@@ -3,25 +3,26 @@ sequenceDiagram
 
 Actor U as User
 
-Participant Web as Página Web
-Participant S as Servidor
+Participant Web as Template(Publicacion_form)
+Participant S as View(PublicacionCreate)
+Participant M as Model(Publicacion)
 Participant DB as Base de datos
-U ->> Web: Boton "crear publicación"
-Activate Web
-  Web -->> U: Formulario "publicacion_form.html"
-Deactivate Web
 U ->> Web: Envía el formulario
 Activate Web
-  Web ->> S: Envía la solicitud POST
+  Web ->> S: PublicacionCreate(CreateView)
   Activate S
     S ->> S: Comprueba que los datos son correctos
-    S ->> S: Asigna usuario actual a la publicación
-    S ->> DB: Envía los datos
-    Activate DB
-      S ->> DB: Envía los productos a la nueva instancia
-      DB -->> S: Devuelve la instancia ya creada
-    Deactivate DB
-    S ->> Web: Devuelve a todas las publicaciones
+    S ->> S: perfil = self.request.user.profile
+    S ->> M: form.instance.save()
+    Activate M
+      S ->> M: form.instance.productos.set(productos)
+      M ->> DB: Envía la instancia
+      Activate DB
+        DB -->> M: Devuelve la confirmación
+      Deactivate DB
+      M -->> S: Envía la confirmación
+    Deactivate M
+    S ->> Web: return super().form_valid(form)
   Deactivate S
-  Web ->> U: Le muestra todas las publicaciones con la ultima creada
+  Web ->> U: Muestra todas las publicaciones
 Deactivate Web
